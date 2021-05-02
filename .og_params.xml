@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<inputs>
+    <radius>                2              </radius>
+    <height>                2e-05           </height>
+    <width>                 2e-05           </width>
+    <depth>                 2e-05           </depth>
+    <Viscosity_Physical>    4.928e-06       </Viscosity_Physical>
+    <deltaP_physical>       50000.0         </deltaP_physical>
+    <dx>                    5.0000000-07    </dx>
+    <dt>                    8.4550865-09    </dt>
+    <du>                    59.135999       </du>
+    <dMass>                 1               </dMass>
+    <dPressure>             2.79765319-5    </dPressure>
+    <ny>                    100              </ny>
+    <nx>                    100              </nx>
+    <nz>                    100              </nz>
+    <tau>                   1               </tau>
+    <Viscosity>             0.1666666666    </Viscosity>
+    <deltaP>                5e-5            </deltaP>
+    <fNameIn>               porespy_palabos_geometry.dat    </fNameIn>
+    <fNameOut>              tmp             </fNameOut>
+    <ncylinders>            250             </ncylinders>
+    <phi_max>               90              </phi_max>
+    <theta_max>             90              </theta_max>
+    <target_porosity>       0.9             </target_porosity>
+    <max_iter>              30000           </max_iter>
+</inputs>

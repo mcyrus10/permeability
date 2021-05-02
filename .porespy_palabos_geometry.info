@@ -1,0 +1,9 @@
+nx = 50
+ny = 50
+nz = 50
+radius = 2.0
+ncylinders = 43
+porosity (calcualted) = 0.890208
+porosity (target) = 0.9
+theta_max = 90.0
+phi_max = 90.0
