@@ -1,1 +1,12 @@
 permeability
+__pycache__/
+tmp/
+.ipynb_checkpoints/
+build/
+batch_output/
+lattice.dat
+proportion_reduce.py
+batch.sh
+.vscode
+notes.md
+.gen_rand.py

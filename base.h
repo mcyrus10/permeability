@@ -34,7 +34,7 @@ class SimulationParams
 {
 	private:
 		plint nx, ny, nz, max_iter;
-		T deltaP, tau;
+		T deltaP, tau, C;
 	public:
 		SimulationParams<T>(
 					plint nx_,
@@ -42,14 +42,16 @@ class SimulationParams
 					plint nz_,
 					plint max_iter_,
 					T deltaP_,
-					T tau_
+					T tau_,
+					T C_
 					):
 			nx(nx_),
 			ny(ny_),
 			nz(nz_),
 			max_iter(max_iter_),
 			deltaP(deltaP_),
-			tau(tau_)
+			tau(tau_),
+			C(C_)
 		{
 			//Calculated values
 		}
@@ -60,13 +62,14 @@ class SimulationParams
 		plint	getMax_iter() const { return max_iter; }
 		T		getDeltaP() const { return deltaP; }
 		T		getTau() const { return tau; }
+		T		getC() const { return C; }
 };
 // }}} end SimulationParams
 // {{{ start assign_params
 SimulationParams<T> assign_params(string f_name)
 {
 	plint nx, ny, nz, max_iter;
-	T deltaP, tau;
+	T deltaP, tau, C;
 	try{
 		XMLreader xmlFile(f_name);
 		pcout << "CONFIGURATION" << endl;
@@ -78,6 +81,7 @@ SimulationParams<T> assign_params(string f_name)
 		xmlFile["inputs"]["max_iter"].read(max_iter);
 		xmlFile["inputs"]["deltaP"].read(deltaP);
 		xmlFile["inputs"]["tau"].read(tau);
+		xmlFile["inputs"]["C"].read(C);
 		pcout << "=============" << endl << endl;
 		} catch (PlbIOException& exception) { 
 		    pcout << exception.what() << endl;
@@ -88,7 +92,8 @@ SimulationParams<T> assign_params(string f_name)
 					nz,
 					max_iter,
 					deltaP,
-					tau);
+					tau,
+					C);
 };
 //}}} end assign_params
 // {{{ start writeLogFile
@@ -119,5 +124,9 @@ void writeLogFile(  IncomprFlowParam<T> const& parameters,
 	ofile << "max_iter			max_iter = " << simParams.getMax_iter() << "\n";
 	ofile << "deltaP			deltaP = " << simParams.getDeltaP() << "\n";
 	ofile << "tau			tau = " << simParams.getTau() << "\n";
+	ofile << "C			C = " << simParams.getC() << "\n";
 }
 // }}} end writeLogFile
+
+
+

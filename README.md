@@ -1,52 +1,59 @@
-Permeability testing
-====================
+# Palabos Permeability
 
-convert to word
+## Clone this repository with git
 
-figures to make:
+In a terminal navigate to the directory where you want permeability to exist then type (note the $ is not part of the command, just to indicate that this is a shell command):
 
-- function of delta p
-- function of delta tau
+```shell
+$ git clone https://github.com/mcyrus10/permeability.git
+```
 
 ---
 
-Note: to toggle between Single and Multi-Relaxation time the lines in base.h are commented out for one or the other. The generic defition *BackgroundDynamics* is then used to to make the distinction generic.
-The MRT matrix, weights and diagonal of the **S** vector can be seen in the file 
+## Compiling
 
-    <palabos root>/src/latticeBoltzmann/mrtLattices.hh 
-  
-If you want to modifiy these values you should make a copy of this file in the local directory and include it with your new values.
+This will download all the contents of this repository into a directory called *permeability.* 
+If you have the old makefile, it should work exactly the same in this directory and you can delete *Cmakelist.txt*. If you want to use this program in an arbitrary directory all you need to do is open *CmakeList.txt*, navigate to line 98 and give it the path to palabos on your computer (also do this for line 99,100,102 and 103). Then:
 
-# REMEMBER! 
+```shell
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ cd ..
+```
 
-CHANGE COMPILER FLAGS AND PYTHON PATH ON MAKEFILE WHEN THIS IS UPLOADED TO ACF!
+Now you should be able to execute permeability with:
+ 
+```shell
+$ mpiexec -n 4 ./permeability
+```
 
-This directory is for testing out the permeability tutorial with porespy generated domains. It is a copy of the *permeability* tutorial with some modifications.
+---
+
+## params.xml
+
+This file now has the additional parameters :
+
+| parameter | description |
+| --- | --- |
+| composite | (0 **or** 1) toggles composite domain  in *generate_domain.py*
+| cyl_proportion | (0-1) defines how much of the solid phase is composed of fibers
+| C         | Forcheimer coefficient |
 
 
-## To Do:
+When you run the program, now it will tell you the permeability calculated with the forcheimer coefficient as well as the dary permeability.
 
-  * ~~create an input file (and readers for *generate_domain.py* and
-    *permeability.cpp*). probably can just use the ones from the boolean mask
-    directory~~
-  * ~~create a minimal-working-example to demonstrate how it works for cylinders.
-    Some good dimensions might be:~~
-    * ~~dim = 40~~
-    * ~~radius = 5~~
-    * ~~ncylinders = 5~~
-  * might want to lower the number of iterations or make it a controllable
-    parameter from the 'input.dat' surface
-  * look at examples/codesByTopics/couplings to understand data processors
-  * ~~modify *generate_domain.py* to write a hidden text file with the geometric
-    simulation paramters (including the calculated porosity)~~
+---
 
-## Questions:
+## generate_domain.py
 
-  * **hypothesis -> size of the geometric domain multiplied by nodes must be less
-    than pvmem x nodes**
-    * this is not exactly true - tried 4 nodes with 32 processors and memory failed
-  * ~~is the call to ps.io.to_palabos correct? (should solid be 1 or 0?)~~
-  * look at nu and omega (frequency of relaxation from palabos coursera
-    tutorial this is the term that is in the collision step and is the inverse
-    of tau?) calculations in *permeability.cpp* to see how it is calculating
-    the time constant (is nu == tau in Dr. Ekici's Code?)
+This python script is used to generate the porous media for the palabos
+simulation. To recover the domain of fibers, toggle *composite* in *params.xml*
+to 0.  
+**Note** 
+- the function 'composite_domain' is defined in *header.py* if you want to
+modify this, also the last line of generate_domain.py is *plt.show()*, which you
+can comment out if you want to suppress the figure.
+
+- *blobiness* can be passed as a paramter to 'composite_domain' (default value is 1)

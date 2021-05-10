@@ -2,7 +2,7 @@
 
 // This function object returns a zero velocity, and a pressure which decreases
 //   linearly in x-direction. It is used to initialize the particle populations.
-class PressureGradient {
+class PressureGradient { // {{{
 public:
     PressureGradient(T deltaP_, plint nx_) : deltaP(deltaP_), nx(nx_)
     { }
@@ -15,9 +15,8 @@ public:
 private:
     T deltaP;
     plint nx;
-};
-
-void readGeometry(  std::string fNameIn,
+}; // }}}
+void readGeometry(  std::string fNameIn, // {{{
                     std::string fNameOut,
                     MultiScalarField3D<int>& geometry)
 {
@@ -56,9 +55,8 @@ void readGeometry(  std::string fNameIn,
         std::string outDir = fNameOut + "/";
         set.writeBinarySTL(outDir + "porousMedium.stl");
     }
-}
-
-void porousMediaSetup(MultiBlockLattice3D<T,DESCRIPTOR>& lattice,
+} // }}}
+void porousMediaSetup(MultiBlockLattice3D<T,DESCRIPTOR>& lattice,   // {{{
         OnLatticeBoundaryCondition3D<T,DESCRIPTOR>* boundaryCondition,
         MultiScalarField3D<int>& geometry, T deltaP)
 {
@@ -67,11 +65,11 @@ void porousMediaSetup(MultiBlockLattice3D<T,DESCRIPTOR>& lattice,
     const plint nz = lattice.getNz();
 
     pcout << "Definition of inlet/outlet." << std::endl;
-    Box3D inlet (0,0, 1,ny-2, 1,nz-2);
+    Box3D inlet (0,0, 0,ny-1, 0,nz-1);
     boundaryCondition->addPressureBoundary0N(inlet, lattice);
     setBoundaryDensity(lattice, inlet, (T) 1.);
 
-    Box3D outlet(nx-1,nx-1, 1,ny-2, 1,nz-2);
+    Box3D outlet(nx-1,nx-1, 0,ny-1, 0,nz-1);
     boundaryCondition->addPressureBoundary0P(outlet, lattice);
     setBoundaryDensity(lattice, outlet, (T) 1. - deltaP*DESCRIPTOR<T>::invCs2);
 
@@ -86,9 +84,8 @@ void porousMediaSetup(MultiBlockLattice3D<T,DESCRIPTOR>& lattice,
 
     lattice.initialize();
     delete boundaryCondition;
-}
-
-void writeGifs(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, plint iter)
+} // }}}
+void writeGifs(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, plint iter) //{{{
 {
     const plint nx = lattice.getNx();
     const plint ny = lattice.getNy();
@@ -106,16 +103,14 @@ void writeGifs(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, plint iter)
     imageWriter.writeScaledGif(createFileName("ux_half", iter, 6),
             *computeVelocityNorm(lattice, Box3D(nx/2,nx/2, 0,ny-1, 0,nz-1)),
             imSize, imSize );
-}
-
-void writeVTK(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, plint iter)
+} // }}}
+void writeVTK(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, plint iter) // {{{
 {
     VtkImageOutput3D<T> vtkOut(createFileName("vtk", iter, 6), 1.);
     vtkOut.writeData<float>(*computeVelocityNorm(lattice), "velocityNorm", 1.);
     vtkOut.writeData<3,float>(*computeVelocity(lattice), "velocity", 1.);
-}
-
-T computePermeability(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, T nu, T deltaP, Box3D domain )
+} // }}}
+T computePermeability(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, T nu, T deltaP, T C, Box3D domain ) // {{{
 {
     pcout << "Computing the permeability." << std::endl;
 
@@ -125,15 +120,15 @@ T computePermeability(MultiBlockLattice3D<T,DESCRIPTOR>& lattice, T nu, T deltaP
 
     T meanU = computeAverage(*computeVelocityComponent(lattice, domain, xComponent));
 
-    pcout << "Average velocity     = " << meanU                         << std::endl;
-    pcout << "Lattice viscosity nu = " << nu                            << std::endl;
-    pcout << "Grad P               = " << deltaP/(T)(nx-1)              << std::endl;
-    pcout << "Permeability         = " << nu*meanU / (deltaP/(T)(nx-1)) << std::endl;
+    pcout << "Average velocity          = " << meanU                         << std::endl;
+    pcout << "Lattice viscosity nu      = " << nu                            << std::endl;
+    pcout << "Grad P                    = " << deltaP/(T)(nx-1)              << std::endl;
+    pcout << "Permeability              = " << nu*meanU / (deltaP/(T)(nx-1)) << std::endl;
+    pcout << "Forcheimer permeability   = " << nu*meanU / (deltaP/(T)(nx-1)-C*meanU*meanU) << std::endl;
 
     return meanU;
-}
-
-int main(int argc, char **argv)
+} // }}}
+int main(int argc, char **argv) // {{{
 {
     plbInit(&argc, &argv);
     pcout << "start" << endl;
@@ -149,6 +144,7 @@ int main(int argc, char **argv)
     const T omega   = 1.0/simParams.getTau();
     const T nu      = ((T)1/omega- (T)0.5)/DESCRIPTOR<T>::invCs2;
     const T deltaP  = simParams.getDeltaP();
+    const T C       = simParams.getC();
 
     pcout << "Creation of the lattice." << std::endl;
     MultiBlockLattice3D<T,DESCRIPTOR> lattice(
@@ -157,7 +153,7 @@ int main(int argc, char **argv)
                                             simParams.getNz(),
                                             new BackgroundDynamics(omega));
     // Switch off periodicity.
-    lattice.periodicity().toggleAll(false);
+    lattice.periodicity().toggleAll(true);
 
     pcout << "Reading the geometry file." << std::endl;
     MultiScalarField3D<int> geometry(nx,ny,nz);
@@ -165,7 +161,9 @@ int main(int argc, char **argv)
 
     pcout << "nu = " << nu << std::endl;
     pcout << "deltaP = " << deltaP << std::endl;
-    pcout << "omega = " << omega << std::endl;
+    pcout << "Forcheimer Coefficient (C) = " << C << std::endl;
+    pcout << "omega = " << omega  << std::endl;
+    pcout << "tau = " << simParams.getTau() << std::endl;
     pcout << "nx = " << lattice.getNx() << std::endl;
     pcout << "ny = " << lattice.getNy() << std::endl;
     pcout << "nz = " << lattice.getNz() << std::endl;
@@ -202,7 +200,7 @@ int main(int argc, char **argv)
     pcout << "End of simulation at iteration " << iT << std::endl;
 
     pcout << "Permeability:" << std::endl << std::endl;
-    computePermeability(lattice, nu, deltaP, lattice.getBoundingBox());
+    computePermeability(lattice, nu, deltaP, C, lattice.getBoundingBox());
     pcout << std::endl;
 
     pcout << "Writing VTK file ..." << std::endl << std::endl;
@@ -210,4 +208,4 @@ int main(int argc, char **argv)
     pcout << "Finished!" << std::endl << std::endl;
 
     return 0;
-}
+} // }}}

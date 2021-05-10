@@ -33,19 +33,21 @@ template<typename T>
 class SimulationParams
 {
 	private:
-		plint nx, ny, nz;
+		plint nx, ny, nz, max_iter;
 		T deltaP, tau;
 	public:
 		SimulationParams<T>(
 					plint nx_,
 					plint ny_,
 					plint nz_,
+					plint max_iter_,
 					T deltaP_,
 					T tau_
 					):
 			nx(nx_),
 			ny(ny_),
 			nz(nz_),
+			max_iter(max_iter_),
 			deltaP(deltaP_),
 			tau(tau_)
 		{
@@ -55,6 +57,7 @@ class SimulationParams
 		plint	getNx() const { return nx; }
 		plint	getNy() const { return ny; }
 		plint	getNz() const { return nz; }
+		plint	getMax_iter() const { return max_iter; }
 		T		getDeltaP() const { return deltaP; }
 		T		getTau() const { return tau; }
 };
@@ -62,7 +65,7 @@ class SimulationParams
 // {{{ start assign_params
 SimulationParams<T> assign_params(string f_name)
 {
-	plint nx, ny, nz;
+	plint nx, ny, nz, max_iter;
 	T deltaP, tau;
 	try{
 		XMLreader xmlFile(f_name);
@@ -72,16 +75,22 @@ SimulationParams<T> assign_params(string f_name)
 		xmlFile["inputs"]["nx"].read(nx);
 		xmlFile["inputs"]["ny"].read(ny);
 		xmlFile["inputs"]["nz"].read(nz);
+		xmlFile["inputs"]["max_iter"].read(max_iter);
 		xmlFile["inputs"]["deltaP"].read(deltaP);
 		xmlFile["inputs"]["tau"].read(tau);
 		pcout << "=============" << endl << endl;
 		} catch (PlbIOException& exception) { 
 		    pcout << exception.what() << endl;
 		}
+        pcout << "assign params --> tau = " << tau << std::endl;
+        pcout << "assign params --> deltaP = " << deltaP << std::endl;
+        pcout << "assign params --> nx = " << nx << std::endl;
+        pcout << "assign params --> ny = " << ny << std::endl;
 		return SimulationParams<T> (
 					nx,
 					ny,
 					nz,
+					max_iter,
 					deltaP,
 					tau);
 };
@@ -111,15 +120,8 @@ void writeLogFile(  IncomprFlowParam<T> const& parameters,
 	ofile << "nx			nx = " << simParams.getNx() << "\n";
 	ofile << "ny			ny = " << simParams.getNy() << "\n";
 	ofile << "nz			nz = " << simParams.getNz() << "\n";
+	ofile << "max_iter			max_iter = " << simParams.getMax_iter() << "\n";
 	ofile << "deltaP			deltaP = " << simParams.getDeltaP() << "\n";
 	ofile << "tau			tau = " << simParams.getTau() << "\n";
 }
 // }}} end writeLogFile
-
-
-
-
-
-
-
-
